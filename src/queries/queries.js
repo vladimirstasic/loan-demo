@@ -9,3 +9,18 @@ export const GET_POST = gql`
         }
     }
 `;
+export const GET_ALL_POSTS = gql`
+    query allPosts(
+        $options: PageQueryOptions
+    ) {
+        posts(options: $options) {
+            data {
+                id
+                title
+            }
+            meta {
+                totalCount
+            }
+        }
+    }
+`;

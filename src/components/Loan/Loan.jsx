@@ -6,15 +6,17 @@ import {
     ButtonGroup,
     CssBaseline,
     Grid,
+    InputAdornment,
     Link,
     NativeSelect,
     Paper,
     Slider,
     TextField,
     Toolbar,
-    Typography,
-    InputAdornment
+    Typography
 } from "@material-ui/core";
+import {useLazyQuery} from "@apollo/client";
+import {GET_ALL_POSTS, GET_POST} from "../../queries/queries";
 
 function Copyright() {
     return (
@@ -64,12 +66,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Loan() {
-    // const {data, loading} = useQuery(GET_POST, {
-    //     variables: {
-    //         id: '2'
-    //     },
-    // });
-    // console.log(data);
     const classes = useStyles();
     const CURRENCIES = {
         EUR: {
@@ -90,6 +86,19 @@ export default function Loan() {
         homePrice: 50000,
         downPayment: 10000,
         durationInMonths: 20,
+        postId: 1,
+        posts: {
+            page: 1,
+            limit: 5,
+        }
+    })
+
+    const [getPost, {data: postData}] = useLazyQuery(GET_POST, {
+        fetchPolicy: 'network-only',
+    })
+
+    const [getAllPosts, {data: allPostsData}] = useLazyQuery(GET_ALL_POSTS, {
+        fetchPolicy: 'network-only',
     })
 
     return (
@@ -247,6 +256,99 @@ export default function Loan() {
                                                    variant="outlined" disabled InputProps={{
                                             endAdornment: <InputAdornment
                                                 position="end"><small>months</small></InputAdornment>,
+                                        }}/>
+                                    </Grid>
+                                </Grid>
+                                <Grid container spacing={5}>
+                                    <Grid item xs={9}>
+                                        <p>SET ID PER POST</p>
+                                        <Slider
+                                            defaultValue={0}
+                                            aria-labelledby="discrete-slider-custom"
+                                            onChangeCommitted={e => setSliderValues({
+                                                ...sliderValues,
+                                                postId: Number(e.target.ariaValueNow)
+                                            })}
+                                            step={1}
+                                            min={1}
+                                            max={10}
+                                            marks={[
+                                                {
+                                                    value: 1,
+                                                    label: 'ID 1',
+                                                },
+                                                {
+                                                    value: 5,
+                                                    label: 'ID 5',
+                                                },
+                                                {
+                                                    value: 10,
+                                                    label: 'ID 10',
+                                                },
+                                            ]}
+                                        />
+                                        <Button variant="contained" color="secondary" onClick={() => getPost({
+                                            variables: {
+                                                id: sliderValues.postId
+                                            },
+                                        })}>
+                                            Get Posts
+                                        </Button>
+                                        <pre>{postData?.post?.body}</pre>
+                                        <pre>{postData?.post?.id}</pre>
+                                        <p>GET POSTS</p>
+                                        <Slider
+                                            defaultValue={0}
+                                            aria-labelledby="discrete-slider-custom"
+                                            onChangeCommitted={e => setSliderValues({
+                                                ...sliderValues,
+                                                posts: {
+                                                    page: e.target.ariaValueNow,
+                                                    limit: e.target.ariaValueNow,
+                                                }
+                                            })}
+                                            step={1}
+                                            min={1}
+                                            max={10}
+                                            marks={[
+                                                {
+                                                    value: 1,
+                                                    label: 'ID 1',
+                                                },
+                                                {
+                                                    value: 5,
+                                                    label: 'ID 5',
+                                                },
+                                                {
+                                                    value: 10,
+                                                    label: 'ID 10',
+                                                },
+                                            ]}
+                                        />
+                                        <Button variant="contained" color="secondary" onClick={() => getAllPosts({
+                                            variables: {
+                                                options: {
+                                                    "paginate": {
+                                                        "page": Number(sliderValues.posts.page),
+                                                        "limit": Number(sliderValues.posts.limit)
+                                                    }
+                                                }
+                                            }
+                                        })}>
+                                            Get All Posts
+                                        </Button>
+                                        {allPostsData?.posts?.data?.map((post, index) => (
+                                            <pre key={index}>
+                                                  <div>{post?.id}</div>
+                                                  <div>{post?.title}</div>
+                                                </pre>
+                                        ))}
+                                    </Grid>
+                                    <Grid item xs={3}>
+                                        <TextField id="duration-months-field" value={sliderValues.postId}
+                                                   variant="outlined" disabled InputProps={{
+                                            endAdornment: <InputAdornment
+                                                position="end"><small>ID</small></InputAdornment>,
                                         }}/>
                                     </Grid>
                                 </Grid>
